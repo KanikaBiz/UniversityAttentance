@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
+use App\Models\Product;
+use App\Models\Category;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class ProductController extends Controller
 {
@@ -11,9 +16,14 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = \App\Models\Product::with('category')->get();
+        // $products = \App\Models\Product::with('category')->get();
         // dd($products);
-        return view('products.index', compact('products'));
+        // return view('products.index', compact('products'));
+
+        $products = \App\Models\Product::with('category')->paginate(10);
+        return Inertia::render('Products/Index', [
+            'products' => $products,
+        ]);
     }
 
     /**
@@ -21,7 +31,10 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        $categories = Category::all();
+        return Inertia::render('Products/Create', [
+            'categories' => $categories,
+        ]);
     }
 
     /**
@@ -29,7 +42,24 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'unit_price' => 'required|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'required|boolean',
+            'category_id' => 'required|exists:categories,id',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        }
+
+        $validated['slug'] = Str::slug($request->name);
+        Product::create($validated);
+
+        return Redirect::route('products.index')->with('success', 'Product created successfully.');
     }
 
     /**
@@ -37,7 +67,10 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $product = Product::with('category')->findOrFail($id);
+        return Inertia::render('Products/Show', [
+            'product' => $product,
+        ]);
     }
 
     /**
@@ -45,7 +78,12 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $product = Product::with('category')->findOrFail($id);
+        $categories = Category::all();
+        return Inertia::render('Products/Edit', [
+            'product' => $product,
+            'categories' => $categories,
+        ]);
     }
 
     /**
@@ -53,7 +91,27 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $product = Product::with('category')->findOrFail($id);
+        $categories = Category::all();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'unit_price' => 'required|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'required|boolean',
+            'category_id' => 'required|exists:categories,id',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        }
+
+        $validated['slug'] = Str::slug($request->name);
+        $product->update($validated);
+
+        return Redirect::route('products.index')->with('success', 'Product updated successfully.');
     }
 
     /**
@@ -61,6 +119,9 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $product = Product::findOrFail($id);
+        $product->delete();
+
+        return Redirect::route('products.index')->with('success', 'Product deleted successfully.');
     }
 }

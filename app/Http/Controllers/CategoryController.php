@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class CategoryController extends Controller
 {
@@ -11,9 +13,14 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = \App\Models\Category::all();
+        // $categories = \App\Models\Category::all();
+        // // dd($categories);
+        // return view('categories.index', compact('categories'));
+        $categories = \App\Models\Category::paginate(10);
         // dd($categories);
-        return view('categories.index', compact('categories'));
+        return inertia('Categories/Index', [
+            'categories' => $categories,
+        ]);
     }
 
     /**
@@ -21,7 +28,8 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+        // return view('categories.create');
+        return inertia('Categories/Create');
     }
 
     /**
@@ -29,15 +37,35 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'slug' => 'nullable|string|max:255|unique:categories,slug',
+        ]);
+
+        $validated['slug'] = Str::slug($validated['name'], '-');
+
+        $category = \App\Models\Category::create($validated);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('categories', 'public');
+        }
+
+        return Redirect::route('categories.index')->with('success', 'Category created successfully.');
+
     }
+
+
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        //
+        $category = \App\Models\Category::findOrFail($id);
+        return inertia('Categories/Show', [
+            'category' => $category,
+        ]);
     }
 
     /**
@@ -45,7 +73,10 @@ class CategoryController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $category = \App\Models\Category::findOrFail($id);
+        return inertia('Categories/Edit', [
+            'category' => $category,
+        ]);
     }
 
     /**
@@ -53,7 +84,15 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $category = \App\Models\Category::findOrFail($id);
+        $category->update($request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]));
+
+        return inertia('Categories/Show', [
+            'category' => $category,
+        ]);
     }
 
     /**
@@ -61,6 +100,11 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $category = \App\Models\Category::findOrFail($id);
+        $category->delete();
+
+        return inertia('Categories/Index', [
+            'categories' => \App\Models\Category::paginate(10),
+        ]);
     }
 }
