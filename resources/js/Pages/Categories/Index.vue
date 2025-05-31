@@ -2,6 +2,9 @@
 <template>
   <div>
     <h1 class="text-2xl font-bold mb-4">Categories</h1>
+    <div v-if="$page.props.success" class="alert alert-success">
+      {{ $page.props.success }}
+    </div>
    <table class="table table-bordered table-striped table-hover">
       <thead class="table-dark">
             <tr>

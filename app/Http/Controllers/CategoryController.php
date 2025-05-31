@@ -28,7 +28,6 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        // return view('categories.create');
         return inertia('Categories/Create');
     }
 
@@ -40,18 +39,28 @@ class CategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'required|boolean',
+            // 'slug' => 'required|string|max:255|unique:categories,slug',
             'slug' => 'nullable|string|max:255|unique:categories,slug',
         ]);
 
         $validated['slug'] = Str::slug($validated['name'], '-');
 
-        $category = \App\Models\Category::create($validated);
+        // $category = \App\Models\Category::create($validated);
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('categories', 'public');
         }
+        $category = \App\Models\Category::create($validated);
+        // dd($category);
+        if(!$category) {
+            return Redirect::back()->withErrors(['error' => 'Failed to create category.']);
+        }else {
+            return Redirect::route('categories.index')->with('success', 'Category created successfully.');
+        }
 
-        return Redirect::route('categories.index')->with('success', 'Category created successfully.');
+        // return Redirect::route('categories.index')->with('success', 'Category created successfully.');
 
     }
 

@@ -53,54 +53,26 @@
   import { reactive, computed, ref } from "vue";
   import { router, usePage } from "@inertiajs/vue3";
 
-  const { categories, submitButtonText } = defineProps({
-    categories: Array,
-    submitButtonText: { type: String, default: "Submit" },
-  });
-
-  const page = usePage();
-  const errors = computed(() => page.props.errors);
-
-//   Check if we are editing an existing category
-    const isEditing = computed(() => categories.id !== undefined);
-    const product = isEditing ? categories : null;
-
-    // Initialize form data
-    const form = reactive({
-        name: product?.name || "",
-        description: product?.description || "",
-        image: null,
-        status: product?.status || true,
+    const props = defineProps({
+        categories: Object,
     });
-
-    // If editing, set the initial image preview
-    const imagePreview = ref(product?.image_url || null);
-
-    // Uncomment if you want to use a form for products
-
-//   const form = reactive({
-//     name: "",
-//     description: "",
-//     unit_price: 0,
-//     sale_price: null,
-//     image: null,
-//     status: true,
-//     category_id: null,
-//   });
-
-//   const imagePreview = ref(null);
-  const existingImage = computed(() => product?.image_url || null);
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    form.image = file || null;
-    if (file) {
-      imagePreview.value = URL.createObjectURL(file);
-    } else {
-      imagePreview.value = null;
-    }
-  };
-
+    const form = reactive({
+        name: props.categories ? props.categories.name : "",
+        description: props.categories ? props.categories.description : "",
+        image: null,
+        status: props.categories ? props.categories.status : 1,
+    });
+    const errors = computed(() => usePage().props.errors || {});
+    const categories = props.categories || null;
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            form.image = file;
+        } else {
+            form.image = null;
+        }
+        };
+    // Handle form submission
   const submit = () => {
     const formData = new FormData();
     Object.keys(form).forEach((key) => {
