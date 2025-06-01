@@ -1,14 +1,3 @@
-Chet Sorithya  
-sorithya091@gmail.com  
-May 31, 2025
-
-
-# ខ្ញុំត្រូវបង្កើតបង្កើត Project សម្រាប់ Web Security ជាមួយ Laravel 12 ដោយភ្ជាប់ជាមួយ Bootstrap 4 Admin Lte
-ចូរប្រាប់ខ្ញុំពីលំដាប់លំដោយក្នុងការបង្កើត Project University Attendance Management System:
-- All Lecture can check Attendance of Their students by Subject and Sections with Theire Semester and Classes
-
-I'll provide a comprehensive guide for creating the University Attendance Management System with Laravel 12, Bootstrap 4, and AdminLTE.
-
 # University Attendance Management System Documentation
 
 > **Key Features:**
